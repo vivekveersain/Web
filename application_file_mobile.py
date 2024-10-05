@@ -135,7 +135,7 @@ app.layout = html.Div(
                             style={'width': '100%'}
                         ),
                     ],
-                    width=12,
+                    width=8,
                     xs=12,
                     sm=12,
                     md=6,  # Half width on medium devices
@@ -331,6 +331,7 @@ def update_graphs(selected_seats, store, n):
     else:
         filtered_df = df
 
+    utc_now = datetime.utcnow()  
     india_time = utc_now + timedelta(hours=5, minutes=30)  # Adjust to UTC +5:30
     timestamp = india_time.strftime('%Y-%m-%d %H:%M:%S')
 
