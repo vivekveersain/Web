@@ -104,7 +104,7 @@ class Data:
 
 data = Data(check_interval=15)
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], title="Haryana Election")
 
 app.layout = html.Div(
     style={'padding': '2rem'},
