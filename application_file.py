@@ -348,4 +348,4 @@ def update_graphs(selected_seats, store, n):
     return election_fig, party_pie_fig, least_margin_fig, timestamp, {"total": filtered_df.Margin.sum()}
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, host = "0.0.0.0", port = 18081)
