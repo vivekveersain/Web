@@ -128,7 +128,7 @@ app = Dash(__name__, server=server)
 # Define layout for Dash
 app.layout = html.Div(style={'fontFamily': 'Arial, sans-serif', 'backgroundColor': '#f4f4f4', 'padding': '10px'}, children=[
     html.H1(
-        html.A("Haryana Elections Results: Will be updating from 8AM on 8th October", href="https://www.youtube.com", target="_blank", style={'color': 'black', 'textDecoration': 'none'}),
+        html.A("Haryana Elections Results", href="https://www.youtube.com", target="_blank", style={'color': 'black', 'textDecoration': 'none'}),
         style={'textAlign': 'center', 'marginBottom': '5px', 'fontSize': '28px', 'fontWeight': 'bold'}
     ),
     html.Div(
