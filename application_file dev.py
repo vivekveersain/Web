@@ -15,7 +15,7 @@ party_colors = {
     "INLD": "#4CAF50",
     "AAP": "#FFC107",
     "JJP": "#E91E63",
-    "Others": "#CCCCCC"
+    "Others": "#CCCCCC",
 }
 
 class Data:
@@ -23,50 +23,43 @@ class Data:
         self.data = pd.DataFrame()
         self.last_df = pd.DataFrame()
         self.last_modified = None
-        self.location = ['statewiseS071']
+        self.location = ['statewiseS071', 'statewiseS072', 'statewiseS073', 'statewiseS074', 'statewiseS075']
         self.dfs = {}
-        self.headers = [
-            'Constituency',
-            'Const. No.',
-            'Leading Candidate',
-            'Leading Party',
-            'Trailing Candidate',
-            'Trailing Party',
-            'Margin',
-            "Status"
-        ]
+        self.headers = ['Constituency','Const. No.','Leading Candidate', 'Leading Party',
+            'Trailing Candidate','Trailing Party','Margin', "Round","Status"]
         self.check_interval = check_interval
         self.update()  # Initial data load
         self.running = True  # Flag to control thread execution
         self.thread = threading.Thread(target=self.run_check, daemon=True)
         self.thread.start()  # Start the thread
+        self.page = None
 
     def run_check(self):
         while self.running:
             self.update()
-            #print("Sleeping...", self.check_interval)  # Consider toggling this
             time.sleep(self.check_interval)
 
     def update(self):
         self.get_data()
-        self.running = False
         if not self.data.empty and all(self.data["Status"] == "Result Declared"):
             self.running = False  # Stop the thread
 
     def get_data(self):
         for location in self.location: self.fetch(location)
-        df = pd.concat(self.dfs.values())
+        df = pd.concat(self.dfs.values()).fillna("")
+        df["Leading Party"] = df["Leading Party"].fillna("X")
         if not df.empty:
             self.data = self.clean(df)
             #self.data = self.data.sort_values(by="Margin", ascending=False)
             if not self.data.equals(self.last_df):
+                print("UPDATED!!!", str(datetime.now()))
                 self.last_modified = int(time.time())  # Update last modified time
                 self.last_df = self.data.copy()
         
     def fetch(self, location):
         try:
             page = requests.get(
-                "https://results.eci.gov.in/PcResultGenJune2024/%s.htm" % location,
+                "https://results.eci.gov.in/AcResultGenOct2024/%s.htm" % location,
                 headers={
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
                     "Accept-Encoding": "gzip, deflate, br, zstd",
@@ -74,7 +67,7 @@ class Data:
                     "Connection": "keep-alive",
                     "DNT": "1",
                     "Priority": "u=1",
-                    "Referer": "https://results.eci.gov.in/PcResultGenJune2024/%s.htm" % location,
+                    "Referer": "https://results.eci.gov.in/AcResultGenOct2024/%s.htm" % location,
                     "Sec-Fetch-Dest": "document",
                     "Sec-Fetch-Mode": "navigate",
                     "Sec-Fetch-Site": "same-origin",
@@ -87,20 +80,16 @@ class Data:
             )
             #page.raise_for_status()  # Raise an error for bad responses
         except requests.RequestException as e:
-            #self.dfs[location] = 
             print(f"Error fetching data: {e}")
-            return
         
         tree = p_html.fromstring(page.text)
         table = tree.xpath('/html/body/main/div/div[3]/div/table/tbody')[0]
 
-        
-
         stack = []
         for row in table.findall(".//tr"):
             txt = [r.text for r in row.findall(".//td")]
-            if len(txt) == 30:
-                final_row = txt[:3] + txt[4:5] + txt[15:16] + txt[17:18] + txt[-2:]
+            if len(txt) == 31:
+                final_row = txt[:3] + txt[4:5] + txt[15:16] + txt[17:18] + txt[-3:]
                 stack.append(final_row)
 
         df = pd.DataFrame(data=stack, columns=self.headers)
@@ -108,8 +97,8 @@ class Data:
 
     def clean(self, df):
         df["Margin"] = df["Margin"].replace("-", "0").astype(int)
-        df["Leading Party"] = df["Leading Party"].apply(lambda x: "".join(r[0] for r in x.split(" ")))
-        df["Label"] = df["Constituency"].astype("str") + df["Status"].apply(lambda x: " (Declared)" if x == "Result Declared" else "") + " | " + df["Margin"].apply(lambda x: format_margin_indian_style(x)).astype("str") + " | " + df['Leading Candidate'] + " | " + df['Leading Party']
+        df["Leading Party"] = df["Leading Party"].replace("", "X").apply(lambda x: "".join(r[0] for r in x.split(" ")))
+        df["Label"] = df["Constituency"].astype("str") + df["Status"].apply(lambda x: " (Declared)" if x == "Result Declared" else "") + " | " + df["Margin"].apply(lambda x: format_margin_indian_style(x)).astype("str") + " (" + df["Round"] + ") |  "  + df['Leading Candidate'] + " | " + df['Leading Party']
         return df
     
 def format_margin_indian_style(margin):
@@ -158,7 +147,7 @@ app.layout = html.Div(style={'fontFamily': 'Arial, sans-serif', 'backgroundColor
         options=[{'label': c, 'value': c} for c in data.data["Constituency"].sort_values()],
         multi=True,
         placeholder="Select Constituencies",
-        style={'width': '100%', 'padding': '2px', 'margin': '5px', 'marginBottom': '2px'}
+        style={'width': '100%', 'padding': '1px', 'margin': '0 auto', 'marginBottom': '1px'}
     ),
     dcc.Graph(id='bar-graph', config={'staticPlot': True, 'scrollZoom': False, 'displayModeBar': False}),
     dcc.Interval(
@@ -198,6 +187,11 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
     last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
     last_update_text = f"Last updated: {last_update_time} IST"
 
+    #print(str(last_modified), str(data.last_modified))
+    #print(int(time.time() - int(data.last_modified)))
+    #print(data.data["Leading Party"].value_counts())
+    #print(data.last_df["Leading Party"].value_counts())
+
     if str(last_modified) == str(data.last_modified) and selected_constituencies == last_selection:
         #print("No update")
         return dash.no_update, dash.no_update, last_update_text, dash.no_update, dash.no_update
@@ -212,11 +206,12 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
     #filtered_df.loc[:, 'Label'] = filtered_df.apply(lambda row: f"{row['Constituency']} | {row['Margin']} | {row['Leading Candidate']} | {row['Leading Party']}", axis=1)
 
     # Sort by Leading Party and then by Margin in descending order
-    filtered_df.sort_values(by=['Leading Party', 'Margin'], ascending=[True, False], inplace=True)
+    filtered_df.sort_values(by=['Leading Party', 'Margin'], ascending=[False, False], inplace=True)
 
     # Calculate the maximum margin for the filtered DataFrame
     max_margin = filtered_df['Margin'].max() if not filtered_df.empty else 0
 
+    if max_margin == 0: max_margin = 1
     # Handle case when selected_constituencies is None
     if selected_constituencies is None:
         selected_constituencies = []
@@ -239,7 +234,7 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
             'type': 'bar',
             'orientation': 'h',
             'marker': {
-                'color': filtered_df['Leading Party'].map(party_colors),
+                'color': filtered_df['Leading Party'].apply(lambda x: party_colors.get(x, "#CCCCCC")),
                 'line': {'width': 0}  # Remove the border
             },
             'text': filtered_df['Label'],
@@ -279,7 +274,7 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
             'type': 'pie',
             'hole': 0.4,
             'marker': {
-                'colors': [party_colors[party] for party in seat_counts.index]
+                'colors': [party_colors.get(party, "#CCCCCC") for party in seat_counts.index]
             },
             'hoverinfo': 'label+percent+value',
             'textinfo': 'label+value',

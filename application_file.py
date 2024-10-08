@@ -36,12 +36,8 @@ class Data:
 
     def run_check(self):
         while self.running:
-            #print("######## UPDATING!!!")
             self.update()
-            #print("Sleeping...", self.check_interval)  # Consider toggling this
             time.sleep(self.check_interval)
-            #print("Sleep Over!!!")
-            #time.sleep(5)
 
     def update(self):
         self.get_data()
@@ -110,7 +106,7 @@ def format_margin_indian_style(margin):
     rev = margin[:-1][::-1]
     return ",".join([rev[e*2:e*2+2] for e, r in enumerate(rev[::2])])[::-1]+margin[-1]
 
-data = Data(check_interval=15)
+data = Data(check_interval=5)
 
 # Initialize Flask app
 server = Flask(__name__)
