@@ -16,7 +16,8 @@ party_colors = {
     "AAP": "#FFC107",
     "JJP": "#E91E63",
     "Others": "#CCCCCC",
-    "" : "#CCCCCC"
+    "" : "#CCCCCC",
+    "X" : "#CCCCCC"
 }
 
 class Data:
@@ -50,6 +51,7 @@ class Data:
     def get_data(self):
         for location in self.location: self.fetch(location)
         df = pd.concat(self.dfs.values()).fillna("")
+        df["Leading Party"] = df["Leading Party"].fillna("X")
         if not df.empty:
             self.data = self.clean(df)
             #self.data = self.data.sort_values(by="Margin", ascending=False)
@@ -98,8 +100,7 @@ class Data:
 
     def clean(self, df):
         df["Margin"] = df["Margin"].replace("-", "0").astype(int)
-        try: df["Leading Party"] = df["Leading Party"].apply(lambda x: "".join(r[0] for r in x.split(" ")))
-        except: pass 
+        df["Leading Party"] = df["Leading Party"].replace("", "X").apply(lambda x: "".join(r[0] for r in x.split(" ")))
         df["Label"] = df["Constituency"].astype("str") + df["Status"].apply(lambda x: " (Declared)" if x == "Result Declared" else "") + " | " + df["Margin"].apply(lambda x: format_margin_indian_style(x)).astype("str") + " | (Round : " + df["Round"] + ") |  "  + df['Leading Candidate'] + " | " + df['Leading Party']
         return df
     
@@ -119,7 +120,7 @@ app = Dash(__name__, server=server)
 # Define layout for Dash
 app.layout = html.Div(style={'fontFamily': 'Arial, sans-serif', 'backgroundColor': '#f4f4f4', 'padding': '10px'}, children=[
     html.H1(
-        html.A("Haryana Elections Results: Will be updating from 8AM on 8th October", href="https://www.youtube.com", target="_blank", style={'color': 'black', 'textDecoration': 'none'}),
+        html.A("Haryana Elections Results", href="https://www.youtube.com", target="_blank", style={'color': 'black', 'textDecoration': 'none'}),
         style={'textAlign': 'center', 'marginBottom': '5px', 'fontSize': '28px', 'fontWeight': 'bold'}
     ),
     html.Div(
@@ -208,6 +209,7 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
     # Calculate the maximum margin for the filtered DataFrame
     max_margin = filtered_df['Margin'].max() if not filtered_df.empty else 0
 
+    if max_margin == 0: max_margin = 1
     # Handle case when selected_constituencies is None
     if selected_constituencies is None:
         selected_constituencies = []
@@ -270,7 +272,7 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
             'type': 'pie',
             'hole': 0.4,
             'marker': {
-                'colors': [party_colors[party] for party in seat_counts.index]
+                'colors': [party_colors.get(party, "#CCCCCC") for party in seat_counts.index]
             },
             'hoverinfo': 'label+percent+value',
             'textinfo': 'label+value',
