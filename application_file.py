@@ -56,7 +56,7 @@ class Data:
             self.data = self.clean(df)
             #self.data = self.data.sort_values(by="Margin", ascending=False)
             if not self.data.equals(self.last_df):
-                print("UPDATED!!!")
+                print("UPDATED!!!", str(datetime.now()))
                 self.last_modified = int(time.time())  # Update last modified time
                 self.last_df = self.data.copy()
         
