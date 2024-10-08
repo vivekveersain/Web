@@ -202,7 +202,7 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
     #filtered_df.loc[:, 'Label'] = filtered_df.apply(lambda row: f"{row['Constituency']} | {row['Margin']} | {row['Leading Candidate']} | {row['Leading Party']}", axis=1)
 
     # Sort by Leading Party and then by Margin in descending order
-    filtered_df.sort_values(by=['Leading Party', 'Margin'], ascending=[True, False], inplace=True)
+    filtered_df.sort_values(by=['Leading Party', 'Margin'], ascending=[False, False], inplace=True)
 
     # Calculate the maximum margin for the filtered DataFrame
     max_margin = filtered_df['Margin'].max() if not filtered_df.empty else 0
