@@ -99,7 +99,7 @@ class Data:
     def clean(self, df):
         df["Margin"] = df["Margin"].replace("-", "0").astype(int)
         df["Leading Party"] = df["Leading Party"].replace("", "X").apply(lambda x: "".join(r[0] for r in x.split(" ")))
-        df["Label"] = df["Constituency"].astype("str") + df["Status"].apply(lambda x: " (Declared)" if x == "Result Declared" else "") + " | " + df["Margin"].apply(lambda x: format_margin_indian_style(x)).astype("str") + " | (Round : " + df["Round"] + ") |  "  + df['Leading Candidate'] + " | " + df['Leading Party']
+        df["Label"] = df["Constituency"].astype("str") + df["Status"].apply(lambda x: " (Declared)" if x == "Result Declared" else "") + " | " + df["Margin"].apply(lambda x: format_margin_indian_style(x)).astype("str") + " (" + df["Round"] + ") |  "  + df['Leading Candidate'] + " | " + df['Leading Party']
         return df
     
 def format_margin_indian_style(margin):
