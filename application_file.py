@@ -36,13 +36,15 @@ class Data:
 
     def run_check(self):
         while self.running:
+            #print("######## UPDATING!!!")
             self.update()
             #print("Sleeping...", self.check_interval)  # Consider toggling this
             time.sleep(self.check_interval)
+            #print("Sleep Over!!!")
+            #time.sleep(5)
 
     def update(self):
         self.get_data()
-        self.running = False
         if not self.data.empty and all(self.data["Status"] == "Result Declared"):
             self.running = False  # Stop the thread
 
@@ -54,6 +56,7 @@ class Data:
             self.data = self.clean(df)
             #self.data = self.data.sort_values(by="Margin", ascending=False)
             if not self.data.equals(self.last_df):
+                print("UPDATED!!!")
                 self.last_modified = int(time.time())  # Update last modified time
                 self.last_df = self.data.copy()
         
@@ -188,10 +191,12 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
     last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
     last_update_text = f"Last updated: {last_update_time} IST"
 
-    print(str(last_modified), str(data.last_modified))
-    print(int(time.time() - int(data.last_modified)))
+    #print(str(last_modified), str(data.last_modified))
+    #print(int(time.time() - int(data.last_modified)))
+    #print(data.data["Leading Party"].value_counts())
+    #print(data.last_df["Leading Party"].value_counts())
 
-    if str(last_modified) == str(data.last_modified) and selected_constituencies == last_selection and False:
+    if str(last_modified) == str(data.last_modified) and selected_constituencies == last_selection:
         #print("No update")
         return dash.no_update, dash.no_update, last_update_text, dash.no_update, dash.no_update
     
