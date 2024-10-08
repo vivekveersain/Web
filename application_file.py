@@ -188,7 +188,10 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
     last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
     last_update_text = f"Last updated: {last_update_time} IST"
 
-    if str(last_modified) == str(data.last_modified) and selected_constituencies == last_selection:
+    print(str(last_modified), str(data.last_modified))
+    print(int(time.time() - int(data.last_modified)))
+
+    if str(last_modified) == str(data.last_modified) and selected_constituencies == last_selection and False:
         #print("No update")
         return dash.no_update, dash.no_update, last_update_text, dash.no_update, dash.no_update
     
