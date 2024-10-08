@@ -16,8 +16,6 @@ party_colors = {
     "AAP": "#FFC107",
     "JJP": "#E91E63",
     "Others": "#CCCCCC",
-    "" : "#CCCCCC",
-    "X" : "#CCCCCC"
 }
 
 class Data:
@@ -232,7 +230,7 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
             'type': 'bar',
             'orientation': 'h',
             'marker': {
-                'color': filtered_df['Leading Party'].map(party_colors),
+                'color': filtered_df['Leading Party'].apply(lambda x: party_colors.get(x, "#CCCCCC")),
                 'line': {'width': 0}  # Remove the border
             },
             'text': filtered_df['Label'],
