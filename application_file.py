@@ -9,6 +9,7 @@ from lxml import html as p_html
 from flask import Flask
 import dash
 
+check_interval = 5
 party_colors = {
     "BJP": "#FF5722",
     "INC": "#1976D2",
@@ -81,6 +82,7 @@ class Data:
             #page.raise_for_status()  # Raise an error for bad responses
         except requests.RequestException as e:
             print(f"Error fetching data: {e}")
+            return
         
         tree = p_html.fromstring(page.text)
         table = tree.xpath('/html/body/main/div/div[3]/div/table/tbody')[0]
@@ -98,7 +100,7 @@ class Data:
     def clean(self, df):
         df["Margin"] = df["Margin"].replace("-", "0").astype(int)
         df["Leading Party"] = df["Leading Party"].replace("", "X").apply(lambda x: "".join(r[0] for r in x.split(" ")))
-        df["Label"] = df["Constituency"].astype("str") + df["Status"].apply(lambda x: " (Declared)" if x == "Result Declared" else "") + " | " + df["Margin"].apply(lambda x: format_margin_indian_style(x)).astype("str") + " (" + df["Round"] + ") |  "  + df['Leading Candidate'] + " | " + df['Leading Party']
+        df["Label"] = df["Round"].apply(lambda x: "*" if len(set(x.split("/")))==1 else "") + df["Constituency"].astype("str") + " | " + df["Margin"].apply(lambda x: format_margin_indian_style(x)).astype("str") + " (" + df["Round"] + ") | "  + df['Leading Candidate'] + " | " + df['Leading Party']
         return df
     
 def format_margin_indian_style(margin):
@@ -106,7 +108,7 @@ def format_margin_indian_style(margin):
     rev = margin[:-1][::-1]
     return ",".join([rev[e*2:e*2+2] for e, r in enumerate(rev[::2])])[::-1]+margin[-1]
 
-data = Data(check_interval=5)
+data = Data(check_interval=check_interval)
 
 # Initialize Flask app
 server = Flask(__name__)
