@@ -3,7 +3,7 @@ from dash import Dash, html, dcc, callback, Output, Input
 import threading
 import time
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import requests
 from lxml import html as p_html
 from flask import Flask
@@ -185,7 +185,7 @@ def update_graph(n, selected_constituencies, last_modified, last_selection):
     if selected_constituencies is None: selected_constituencies = []
 
     # Get the current time in UTC+5:30
-    current_time = datetime.utcnow() + timedelta(hours=5, minutes=30)
+    current_time = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
     last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
     last_update_text = f"Last updated: {last_update_time} IST"
 
