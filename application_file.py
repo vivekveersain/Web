@@ -12,8 +12,8 @@ import dash
 check_interval = 5
 party_colors = {
     "BJP": "#FF5722",
-    "INC": "#1976D2",
-    "INLD": "#4CAF50",
+    "AITC": "#1976D2",
+    "BGPM": "#4CAF50",
     "AAP": "#FFC107",
     "JJP": "#E91E63",
     "Others": "#CCCCCC",
@@ -24,7 +24,7 @@ class Data:
         self.data = pd.DataFrame()
         self.last_df = pd.DataFrame()
         self.last_modified = None
-        self.location = ['statewiseS071', 'statewiseS072', 'statewiseS073', 'statewiseS074', 'statewiseS075']
+        self.location = ["statewiseS25%d" % r for r in range(1, 16)] #['statewiseS071', 'statewiseS072', 'statewiseS073', 'statewiseS074', 'statewiseS075']
         self.dfs = {}
         self.headers = ['Constituency','Const. No.','Leading Candidate', 'Leading Party',
             'Trailing Candidate','Trailing Party','Margin', "Round","Status"]
@@ -53,31 +53,31 @@ class Data:
             self.data = self.clean(df)
             #self.data = self.data.sort_values(by="Margin", ascending=False)
             if not self.data.equals(self.last_df):
-                print("UPDATED!!!", str(datetime.now()))
+                # print("UPDATED!!!", str(datetime.now()))
                 self.last_modified = int(time.time())  # Update last modified time
                 self.last_df = self.data.copy()
         
     def fetch(self, location):
         try:
+            # print("https://results.eci.gov.in/ResultAcGenMay2026/%s.htm" % location)
             page = requests.get(
-                "https://results.eci.gov.in/AcResultGenOct2024/%s.htm" % location,
+                "https://results.eci.gov.in/ResultAcGenMay2026/%s.htm" % location,
                 headers={
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Accept-Encoding": "gzip, deflate, br, zstd",
-                    "Accept-Language": "en-US,en;q=0.5",
-                    "Connection": "keep-alive",
-                    "DNT": "1",
-                    "Priority": "u=1",
-                    "Referer": "https://results.eci.gov.in/AcResultGenOct2024/%s.htm" % location,
-                    "Sec-Fetch-Dest": "document",
-                    "Sec-Fetch-Mode": "navigate",
-                    "Sec-Fetch-Site": "same-origin",
-                    "Sec-Fetch-User": "?1",
-                    "Sec-GPC": "1",
-                    "TE": "trailers",
-                    "Upgrade-Insecure-Requests": "1",
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0"
-                }
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Connection": "keep-alive",
+        "DNT": "1",
+        "Priority": "u=0, i",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Sec-GPC": "1",
+        "TE": "trailers",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0"
+    }
             )
             #page.raise_for_status()  # Raise an error for bad responses
         except requests.RequestException as e:
@@ -85,6 +85,7 @@ class Data:
             return
         
         tree = p_html.fromstring(page.text)
+        # print(page.text)
         table = tree.xpath('/html/body/main/div/div[3]/div/table/tbody')[0]
 
         stack = []
